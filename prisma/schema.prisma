@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Cargos {
+  Id_cargo     Int        @id
+  Nombre_cargo String?    @db.VarChar(255)
+  Usuarios     Usuarios[]
+}
+
+model Cuentas {
+  Id_cuenta     Int         @id
+  Nombre_cuenta String?     @db.VarChar(255)
+  Monto         Int?
+  Operacion     Operacion[]
+}
+
+model Detalle_ventas_productos {
+  Id_venta     Int
+  Id_producto  Int
+  Cantidad     Int?
+  Precio_total Decimal?  @db.Decimal(10, 2)
+  Productos    Productos @relation(fields: [Id_producto], references: [Id_producto], onDelete: NoAction, onUpdate: NoAction, map: "Detalle_ventas_productos_ibfk_1")
+  Ventas       Ventas    @relation(fields: [Id_venta], references: [Id_venta], onDelete: NoAction, onUpdate: NoAction, map: "Detalle_ventas_productos_ibfk_2")
+
+  @@id([Id_venta, Id_producto])
+  @@index([Id_producto], map: "Id_producto")
+}
+
+model Estado_usuarios {
+  Id_estado_usuario     Int        @id
+  Nombre_estado_usuario String?    @db.VarChar(255)
+  Usuarios              Usuarios[]
+}
+
+model Estado_ventas {
+  Id_estado_venta     Int      @id @default(autoincrement())
+  Nombre_estado_venta String?  @db.VarChar(255)
+  Ventas              Ventas[]
+}
+
+model Lote_productos {
+  Id_lote       Int        @id @default(autoincrement())
+  Id_producto   Int?
+  Precio_compra Decimal?   @db.Decimal(10, 2)
+  Cantidad      Int?
+  Stock         Int?
+  Fecha         DateTime?  @db.Date
+  Productos     Productos? @relation(fields: [Id_producto], references: [Id_producto], onDelete: NoAction, onUpdate: NoAction, map: "Lote_productos_ibfk_1")
+
+  @@index([Id_producto], map: "Id_producto")
+}
+
+model Medio_pagos {
+  Id_pago              Int                 @id @default(autoincrement())
+  Nombre_pago          String?             @db.VarChar(255)
+  Id_estado_medio_pago Int?                @default(1)
+  Estado_medios_pago   Estado_medios_pago? @relation(fields: [Id_estado_medio_pago], references: [Id_estado_medio_pago], onDelete: NoAction, onUpdate: NoAction, map: "Medio_pagos_ibfk_1")
+  Ventas               Ventas[]
+
+  @@index([Id_estado_medio_pago], map: "Id_estado_medio_pago")
+}
+
+model Operacion {
+  Id_operacion      Int             @id
+  Monto             Int?
+  Fecha_operacion   DateTime?       @db.Date
+  Id_tipo_operacion Int?
+  Id_cuenta         Int?
+  Descripcion       String?         @db.VarChar(255)
+  Tipo_operacion    Tipo_operacion? @relation(fields: [Id_tipo_operacion], references: [Id_tipo_operacion], onDelete: NoAction, onUpdate: NoAction, map: "Operacion_ibfk_1")
+  Cuentas           Cuentas?        @relation(fields: [Id_cuenta], references: [Id_cuenta], onDelete: NoAction, onUpdate: NoAction, map: "Operacion_ibfk_2")
+
+  @@index([Id_cuenta], map: "Id_cuenta")
+  @@index([Id_tipo_operacion], map: "Id_tipo_operacion")
+}
+
+model Productos {
+  Id_producto              Int                        @id
+  Nombre                   String?                    @db.VarChar(255)
+  Precio_venta             Decimal?                   @db.Decimal(10, 2)
+  Stock                    Int?                    
+  Detalle_ventas_productos Detalle_ventas_productos[]
+  Lote_productos           Lote_productos[]
+}
+
+model Tipo_operacion {
+  Id_tipo_operacion Int         @id
+  Nombre_operacion  String?     @db.VarChar(255)
+  Operacion         Operacion[]
+}
+
+model Usuarios {
+  Id_usuario        Int              @id
+  Nombre            String?          @db.VarChar(60)
+  Apellido_1        String?          @db.VarChar(80)
+  Apellido_2        String?          @db.VarChar(80)
+  Contrasena        String?          @db.VarChar(255)
+  Cargo             Int?
+  Id_estado_usuario Int?             @default(1)
+  Estado_usuarios   Estado_usuarios? @relation(fields: [Id_estado_usuario], references: [Id_estado_usuario], onDelete: NoAction, onUpdate: NoAction, map: "Usuarios_ibfk_1")
+  Cargos            Cargos?          @relation(fields: [Cargo], references: [Id_cargo], onDelete: NoAction, onUpdate: NoAction, map: "Usuarios_ibfk_2")
+  Ventas            Ventas[]
+
+  @@index([Cargo], map: "Cargo")
+  @@index([Id_estado_usuario], map: "Id_estado_usuario")
+}
+
+model Ventas {
+  Id_venta                 Int                        @id
+  Id_pago                  Int?
+  Total_venta              Decimal?                   @db.Decimal(10, 2)
+  Fecha_venta              DateTime?                  @default(now()) @db.DateTime(0)
+  Id_usuario               Int
+  Utilidad_total           Decimal?                   @db.Decimal(10, 2)
+  Id_estado_venta          Int?
+  Detalle_ventas_productos Detalle_ventas_productos[]
+  Estado_ventas            Estado_ventas?             @relation(fields: [Id_estado_venta], references: [Id_estado_venta], onDelete: NoAction, onUpdate: NoAction, map: "Ventas_ibfk_1")
+  Medio_pagos              Medio_pagos?               @relation(fields: [Id_pago], references: [Id_pago], onDelete: NoAction, onUpdate: NoAction, map: "Ventas_ibfk_2")
+  Usuarios                 Usuarios                   @relation(fields: [Id_usuario], references: [Id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "Ventas_ibfk_3")
+
+  @@index([Id_estado_venta], map: "Id_estado_venta")
+  @@index([Id_pago], map: "Id_pago")
+  @@index([Id_usuario], map: "Id_usuario")
+}
+
+model Estado_medios_pago {
+  Id_estado_medio_pago     Int           @id
+  Nombre_estado_medio_pago String?       @db.VarChar(255)
+  Medio_pagos              Medio_pagos[]
+}
