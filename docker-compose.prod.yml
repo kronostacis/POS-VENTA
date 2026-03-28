@@ -1,8 +1,9 @@
+version: '3.8'
+
 services:
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    # OJO: Aquí ya no dice "build", sino "image". Descarga la imagen empaquetada.
+    image: tu_usuario/pos-venta-app:latest
     container_name: pos-venta-web
     restart: unless-stopped
     ports:
@@ -15,9 +16,8 @@ services:
         condition: service_healthy
 
   db:
-    build:
-      context: .
-      dockerfile: Dockerfile.db
+    # OJO: Descarga tu imagen de base de datos modificada
+    image: tu_usuario/pos-venta-db:latest
     platform: linux/amd64
     container_name: pos-venta-db
     restart: unless-stopped

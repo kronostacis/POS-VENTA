@@ -1,0 +1,8 @@
+FROM mysql:8.0
+
+# Copiar los scripts de inicialización hacia adentro de la imagen
+COPY ./init-db/ /docker-entrypoint-initdb.d/
+
+# Así, cuando alguien corra esta imagen en la nube solo con "docker run",
+# los scripts ya vendrán incrustados de fábrica y se ejecutarán al arrancar 
+# si la base no existe.

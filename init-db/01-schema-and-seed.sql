@@ -127,7 +127,7 @@ CREATE TABLE `Detalle_ventas_productos` (
     FOREIGN KEY (`Id_venta`) REFERENCES `Ventas`(`Id_venta`)
 );
 
--- DATOS INICIALES
+-- DATOS INICIALES SEMILLA
 INSERT INTO `Cargos` (`Id_cargo`, `Nombre_cargo`) VALUES
 (1, 'Administrador'),
 (2, 'Cajero'),
@@ -141,7 +141,7 @@ INSERT INTO `Medio_pagos` (`Id_pago`, `Nombre_pago`) VALUES
 (1, 'Efectivo'),
 (2, 'Debito'),
 (3, 'Credito'),
-(4, 'Transferencia'),
+(4, 'Transferencia');
 
 INSERT INTO `Estado_usuarios` (`Id_estado_usuario`, `Nombre_estado_usuario`) VALUES 
 (1, 'Activo'), 
@@ -153,9 +153,7 @@ INSERT INTO `Estado_ventas` (`Nombre_estado_venta`) VALUES
 ('Devuelta'),
 ('Parcialmente pagada');
 
-INSERT INTO `Usuarios` (`Id_usuario`, `Nombre`, `Apellido_1`, `Apellido_2`, `Contrasena`, `Cargo`) VALUES
-(210463003, 'Benjamin', 'Villablanca', 'Zuñiga', '$argon2i$v=19$m=16,t=2,p=1$b2xCSFgxVzF1SnhZUGJySg$HYmqPvP8tXr0XqSptyFTrA', 1),
-
+-- EL USUARIO SE INSERTA LUEGO EN EL SCRIPT 02-create-admin.sh
 
 INSERT INTO Productos (Id_producto, Nombre, Precio_venta, Stock) VALUES
 (1, 'Camiseta', 15990, 120),
