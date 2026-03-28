@@ -16,8 +16,8 @@ services:
         condition: service_healthy
 
   db:
-    # OJO: Descarga tu imagen de base de datos modificada
-    image: tu_usuario/pos-venta-db:latest
+    # OJO: Descarga la imagen OFICIAL de base de datos
+    image: mysql:8.0
     platform: linux/amd64
     container_name: pos-venta-db
     restart: unless-stopped

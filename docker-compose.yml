@@ -15,9 +15,7 @@ services:
         condition: service_healthy
 
   db:
-    build:
-      context: .
-      dockerfile: Dockerfile.db
+    image: mysql:8.0
     platform: linux/amd64
     container_name: pos-venta-db
     restart: unless-stopped
@@ -28,6 +26,7 @@ services:
     ports: 
       - "3307:3306"
     volumes:
+      - ./init-db:/docker-entrypoint-initdb.d
       - db_data:/var/lib/mysql
     networks:
       - pos-network
