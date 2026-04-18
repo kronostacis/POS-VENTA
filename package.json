@@ -36,5 +36,8 @@
     "@tailwindcss/postcss": "^4",
     "cypress": "^14.5.0",
     "tailwindcss": "^4"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   }
 }
