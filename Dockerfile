@@ -1,5 +1,4 @@
-FROM node:22-bookworm AS base
-
+FROM --platform=linux/amd64 node:22.14-bookworm-slim AS base
 # Install dependencies only when needed
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
