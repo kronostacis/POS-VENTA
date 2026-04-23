@@ -1,5 +1,5 @@
 FROM node:22-bookworm-slim AS base
-RUN apt-get update && apt-get install -y openssl libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y openssl libssl-dev ca-certificates default-mysql-client && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 FROM base AS deps
@@ -44,6 +44,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin ./node_modules/
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --chown=nextjs:nodejs init-db ./init-db
+
+# Instalamos prisma globalmente para usarlo en los contenedores finales
+RUN npm install -g prisma@6.8.2
+
 USER nextjs
 EXPOSE 3000
 CMD ["node", "server.js"]

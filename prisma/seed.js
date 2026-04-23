@@ -98,40 +98,8 @@ async function main() {
     },
   });
 
-  // 3. Apply SQL Triggers (idempotent: DROP IF EXISTS before CREATE)
-  console.log('Applying database triggers from sql.sql...');
-  try {
-    const sqlPath = path.join(__dirname, '../sql.sql');
-    const sqlContent = fs.readFileSync(sqlPath, 'utf8');
-
-    // Extract triggers (between DELIMITER // and DELIMITER ;)
-    const triggerSection = sqlContent.split('DELIMITER //')[1]?.split('DELIMITER ;')[0];
-
-    if (triggerSection) {
-      // Split by // to get individual CREATE TRIGGER blocks
-      const triggers = triggerSection.split('//')
-        .map(t => t.trim())
-        .filter(t => t.toUpperCase().includes('CREATE TRIGGER'));
-
-      for (const triggerSql of triggers) {
-        // Extract trigger name to DROP it first (makes it idempotent)
-        const nameMatch = triggerSql.match(/CREATE\s+TRIGGER\s+(\w+)/i);
-        if (nameMatch) {
-          const triggerName = nameMatch[1];
-          console.log(`  → Dropping trigger ${triggerName} if exists...`);
-          await prisma.$executeRawUnsafe(`DROP TRIGGER IF EXISTS \`${triggerName}\``);
-          console.log(`  → Creating trigger ${triggerName}...`);
-          await prisma.$executeRawUnsafe(triggerSql);
-        }
-      }
-      console.log('Triggers applied successfully.');
-    } else {
-      console.warn('No trigger section found in sql.sql');
-    }
-  } catch (error) {
-    console.error('Error applying triggers:', error.message);
-    throw error; // Re-throw so the seed fails loudly instead of silently
-  }
+  // 3. Los Triggers ya no se aplican por Prisma. 
+  // Ahora el Provisioner los aplica usando el cliente nativo de MySQL con el archivo 02-triggers.sql.
 
   console.log('--- Seeding Process Completed ---');
 }
