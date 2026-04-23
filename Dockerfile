@@ -20,6 +20,10 @@ ENV NODE_ENV=production
 # --- EL CAMBIO CLAVE ---
 # Le damos un HOME real al usuario para que npx pueda trabajar
 ENV HOME=/home/nextjs
+
+# Instalamos prisma globalmente primero (como root) para que los binarios queden disponibles
+RUN npm install -g prisma@6.8.2
+
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 --home /home/nextjs nextjs && \
     mkdir -p /home/nextjs/.npm && \
@@ -44,9 +48,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin ./node_modules/
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --chown=nextjs:nodejs init-db ./init-db
-
-# Instalamos prisma globalmente para usarlo en los contenedores finales
-RUN npm install -g prisma@6.8.2
 
 USER nextjs
 EXPOSE 3000
