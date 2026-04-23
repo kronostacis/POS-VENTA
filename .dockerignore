@@ -12,7 +12,6 @@ cypress/
 cypress.config.js
 .scannerwork/
 plantilla_productos.csv
-init-db/
 build/
 dist/
 npm-debug.log*
