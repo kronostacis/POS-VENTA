@@ -1,71 +1,44 @@
-# --- ESTAPA 1: Base (Configuración común y dependencias de sistema) ---
 FROM node:22-bookworm-slim AS base
-
-# Instalamos dependencias de sistema necesarias para Prisma y motores de BD
-RUN apt-get update && apt-get install -y \
-    openssl \
-    libssl-dev \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
+RUN apt-get update && apt-get install -y openssl libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
-# --- ETAPA 2: Deps (Instalación de dependencias de Node) ---
 FROM base AS deps
-# Copiamos archivos de definición de paquetes
-COPY package.json package-lock.json* ./
-# Instalamos todas las dependencias
+COPY package*.json ./
 RUN npm install
 
-# --- ETAPA 3: Builder (Compilación de la aplicación) ---
 FROM base AS builder
 WORKDIR /app
-# Traemos las node_modules de la etapa anterior
 COPY --from=deps /app/node_modules ./node_modules
-# Copiamos todo el código fuente (incluyendo prisma e init-db)
 COPY . .
-
-# Generamos el cliente de Prisma (necesario para el build de Next.js)
 RUN npx prisma generate
-
-# Construimos la aplicación en modo standalone
 RUN npm run build
 
-# --- ETAPA 4: Runner (Imagen final de producción) ---
 FROM base AS runner
 WORKDIR /app
-
 ENV NODE_ENV=production
 
-# Creamos un usuario de sistema para no correr como root
+# --- EL CAMBIO CLAVE ---
+# Le damos un HOME real al usuario para que npx pueda trabajar
+ENV HOME=/home/nextjs
 RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+    adduser --system --uid 1001 --home /home/nextjs nextjs && \
+    mkdir -p /home/nextjs/.npm && \
+    chown -R nextjs:nodejs /home/nextjs /app
 
-# Copiamos archivos públicos
-COPY --from=builder /app/public ./public
-
-# Preparamos la carpeta .next con permisos correctos
-RUN mkdir .next && chown nextjs:nodejs .next
-
-# Copiamos el build standalone de Next.js
+# Copiamos lo necesario de Next.js
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
-# --- ARCHIVOS PARA EL ORQUESTADOR (Aprovisionamiento) ---
-# Copiamos la carpeta prisma y el package.json (para que npx funcione)
+# --- COPIAS PARA QUE NPX ENCUENTRE PRISMA LOCALMENTE ---
+# Copiamos el paquete prisma para que npx lo detecte en node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/engines ./node_modules/@prisma/engines
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
-
-# Copiamos los scripts SQL de inicialización directamente al runner
-# Esto evita errores si el builder tuvo problemas con las rutas
 COPY --chown=nextjs:nodejs init-db ./init-db
 
 USER nextjs
-
 EXPOSE 3000
-
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-# server.js es generado por el modo standalone de Next.js
 CMD ["node", "server.js"]
