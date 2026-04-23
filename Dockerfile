@@ -34,8 +34,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 # 1. Traemos el SCOPE completo de @prisma (motores, cliente, debug)
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 
-# 2. EL FIX: Copiamos TODA la carpeta .bin en lugar de solo el archivo prisma
-# Esto incluye los archivos .wasm y otros scripts necesarios para Prisma 7
+# 2. EL FIX: Copiamos el paquete prisma principal (donde residen los archivos .wasm reales)
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+
+# 3. Opcional: Copiamos .bin por si algún script lo necesita internamente
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin ./node_modules/.bin
 
 # 3. Tus esquemas, scripts y package.json
