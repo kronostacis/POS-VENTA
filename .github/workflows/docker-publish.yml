@@ -44,3 +44,16 @@ jobs:
           # El cache-from/to acelera builds futuros en GitHub
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  notify:
+    needs: build-and-push
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify provisioner webhook
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          curl -sf -X POST "${{ secrets.PROVISIONER_URL }}/api/updates/webhook" \
+            -H "Authorization: Bearer ${{ secrets.WEBHOOK_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"tag\": \"${TAG}\", \"image_url\": \"${{ secrets.DOCKERHUB_USERNAME }}/pos-venta:${TAG}\", \"is_stable\": true}"

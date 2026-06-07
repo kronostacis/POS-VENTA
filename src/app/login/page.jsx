@@ -56,9 +56,14 @@ export default function LoginForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="max-w-md w-full p-8 bg-white rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105">
-        <h2 className="text-3xl font-extrabold mb-8 text-center text-gray-900">
-          Iniciar Sesión
-        </h2>
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-extrabold text-gray-900">
+            Iniciar Sesión
+          </h2>
+          <p className="text-sm text-gray-500 mt-2 font-medium">
+            Software de gestión de ventas e inventario
+          </p>
+        </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
@@ -115,6 +120,12 @@ export default function LoginForm() {
             </button>
           </div>
         </form>
+
+        <div className="mt-8 text-center border-t border-gray-100 pt-4">
+          <p className="text-xs text-gray-400">
+            powered by <span className="font-semibold text-gray-500">provisioner</span>
+          </p>
+        </div>
       </div>
     </div>
   );
